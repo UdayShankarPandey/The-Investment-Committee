@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <style>
+    .left { fill: #10110f; }
+    .right { fill: #d5a85a; }
+    @media (prefers-color-scheme: dark) {
+      .left { fill: #f4f1e9; }
+    }
+  </style>
+  <path class="left" d="M 45 20 A 35 35 0 0 0 45 90 Z" />
+  <path class="right" d="M 55 10 A 35 35 0 0 1 55 80 Z" />
+</svg>
