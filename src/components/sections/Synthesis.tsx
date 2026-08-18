@@ -1,12 +1,22 @@
 import { SectionLabel } from '../ui/SectionLabel'
+import { useIntersectionObserver } from '../../hooks/useIntersectionObserver'
 
 export function Synthesis() {
+  const { domRef, isVisible } = useIntersectionObserver({ threshold: 0.3 })
+
   return (
-    <section className="synthesis" id="synthesis" aria-labelledby="synthesis-title">
+    <section 
+      ref={domRef as React.RefObject<HTMLElement>}
+      className={`synthesis ${isVisible ? 'is-visible' : ''}`} 
+      id="synthesis" 
+      aria-labelledby="synthesis-title"
+    >
       <div className="container synthesis__inner">
-        <SectionLabel>Synthesis</SectionLabel>
-        <h2 id="synthesis-title">Confidence requires friction.</h2>
-        <p>
+        <div className="reveal-fade">
+          <SectionLabel>Synthesis</SectionLabel>
+        </div>
+        <h2 id="synthesis-title" className="reveal-fade" style={{ transitionDelay: '300ms' }}>Confidence requires friction.</h2>
+        <p className="reveal-fade" style={{ transitionDelay: '600ms' }}>
           The goal is not to generate a simple answer. It is to produce a thesis that has survived research, opposing arguments, risk analysis, and structured scrutiny.
         </p>
       </div>

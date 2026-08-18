@@ -1,6 +1,7 @@
 import { Badge } from '../ui/Badge'
 import { Divider } from '../ui/Divider'
 import { SectionLabel } from '../ui/SectionLabel'
+import { useIntersectionObserver } from '../../hooks/useIntersectionObserver'
 
 const cases = [
   {
@@ -26,18 +27,27 @@ const risks = [
 ]
 
 export function ProductShowcase() {
+  const { domRef, isVisible } = useIntersectionObserver({ threshold: 0.15 })
+
   return (
-    <section className="product-showcase" id="product-showcase" aria-labelledby="showcase-title">
+    <section 
+      ref={domRef as React.RefObject<HTMLElement>}
+      className={`product-showcase ${isVisible ? 'is-visible' : ''}`} 
+      id="product-showcase" 
+      aria-labelledby="showcase-title"
+    >
       <div className="container">
         <div className="showcase-intro">
           <div>
-            <SectionLabel>Inside a committee run</SectionLabel>
-            <h2 id="showcase-title">Reasoning that stays visible from evidence to verdict.</h2>
+            <div className="reveal-fade">
+              <SectionLabel>Inside a committee run</SectionLabel>
+            </div>
+            <h2 id="showcase-title" className="reveal-up" style={{ transitionDelay: '150ms' }}>Reasoning that stays visible from evidence to verdict.</h2>
           </div>
-          <p>Instead of collapsing a thesis into one answer, the interface preserves the cases, rebuttals, and risks behind its synthesis.</p>
+          <p className="reveal-fade" style={{ transitionDelay: '300ms' }}>Instead of collapsing a thesis into one answer, the interface preserves the cases, rebuttals, and risks behind its synthesis.</p>
         </div>
 
-        <article className="research-workspace" aria-label="Illustrative committee research workspace">
+        <article className="research-workspace reveal-up" style={{ transitionDelay: '450ms' }} aria-label="Illustrative committee research workspace">
           <header className="research-workspace__header">
             <div>
               <p>The Investment Committee</p>
@@ -46,7 +56,7 @@ export function ProductShowcase() {
             <Badge tone="accent">Illustrative interface</Badge>
           </header>
 
-          <div className="research-workspace__thesis">
+          <div className="research-workspace__thesis reveal-fade" style={{ transitionDelay: '550ms' }}>
             <div>
               <p className="workspace-label">Illustrative thesis</p>
               <h3>AAPL <span>Apple Inc.</span></h3>
@@ -58,7 +68,7 @@ export function ProductShowcase() {
 
           <Divider />
 
-          <section className="evidence-ledger" aria-labelledby="evidence-title">
+          <section className="evidence-ledger reveal-fade" style={{ transitionDelay: '650ms' }} aria-labelledby="evidence-title">
             <div>
               <p className="workspace-label">Research desk</p>
               <h3 id="evidence-title">Evidence ledger</h3>
@@ -73,7 +83,7 @@ export function ProductShowcase() {
 
           <Divider />
 
-          <div className="case-grid">
+          <div className="case-grid reveal-fade" style={{ transitionDelay: '750ms' }}>
             {cases.map((caseItem) => (
               <section className={`case-panel case-panel--${caseItem.tone}`} key={caseItem.tone}>
                 <p className="case-panel__label"><span aria-hidden="true">{caseItem.direction}</span>{caseItem.label}</p>
@@ -85,7 +95,7 @@ export function ProductShowcase() {
 
           <Divider />
 
-          <section className="showcase-debate" aria-labelledby="showcase-debate-title">
+          <section className="showcase-debate reveal-fade" style={{ transitionDelay: '850ms' }} aria-labelledby="showcase-debate-title">
             <div>
               <p className="workspace-label">Debate / rebuttal</p>
               <h3 id="showcase-debate-title">The cases answer each other.</h3>
@@ -98,7 +108,7 @@ export function ProductShowcase() {
 
           <Divider />
 
-          <div className="workspace-outcome">
+          <div className="workspace-outcome reveal-fade" style={{ transitionDelay: '950ms' }}>
             <section className="risk-ledger" aria-labelledby="risk-ledger-title">
               <div>
                 <p className="workspace-label">Risk officer</p>

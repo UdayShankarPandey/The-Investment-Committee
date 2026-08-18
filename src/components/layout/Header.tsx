@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
+import { useIntersectionObserver } from '../../hooks/useIntersectionObserver'
 
 const navigationItems = [
   { label: 'Product', href: '#product-showcase' },
@@ -8,6 +9,7 @@ const navigationItems = [
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const { domRef, isVisible } = useIntersectionObserver()
   
   const [clickCount, setClickCount] = useState(0)
   const [lastClickTime, setLastClickTime] = useState(0)
@@ -47,7 +49,10 @@ export function Header() {
   }
 
   return (
-    <header className="site-header">
+    <header 
+      ref={domRef as React.RefObject<HTMLElement>}
+      className={`site-header ${isVisible ? 'is-visible' : ''}`}
+    >
       <div className="container site-header__inner">
         <a 
           className="brand" 
@@ -74,11 +79,11 @@ export function Header() {
           {showEasterEgg ? 'Committee convened' : ''}
         </div>
 
-        <nav className="site-nav" aria-label="Primary navigation">
+        <nav className="site-nav reveal-fade" style={{ transitionDelay: '150ms' }} aria-label="Primary navigation">
           {navigationItems.map((item) => <a key={item.href} href={item.href}>{item.label}</a>)}
         </nav>
 
-        <a className="header-cta" href="#convene">Convene the committee <span aria-hidden="true">↗</span></a>
+        <a className="header-cta reveal-fade" style={{ transitionDelay: '300ms' }} href="#convene">Convene the committee <span aria-hidden="true">↗</span></a>
 
         <button
           className="menu-toggle"

@@ -1,29 +1,35 @@
 import { useState } from 'react'
 import { SectionLabel } from '../ui/SectionLabel'
+import { useIntersectionObserver } from '../../hooks/useIntersectionObserver'
 
 export function DevilsAdvocate() {
   const [challenged, setChallenged] = useState(false)
+  const { domRef, isVisible } = useIntersectionObserver({ threshold: 0.25 })
 
   return (
     <section
-      className="devils-advocate"
+      ref={domRef as React.RefObject<HTMLElement>}
+      className={`devils-advocate ${isVisible ? 'is-visible' : ''}`}
       id="devils-advocate"
       aria-labelledby="devils-advocate-title"
     >
       <div className="container">
         <div className="devils-advocate__intro">
-          <SectionLabel>The devil's advocate</SectionLabel>
-          <h2 id="devils-advocate-title">
+          <div className="reveal-fade">
+            <SectionLabel>The devil's advocate</SectionLabel>
+          </div>
+          <h2 id="devils-advocate-title" className="reveal-up" style={{ transitionDelay: '150ms' }}>
             Every thesis deserves<br />to be challenged.
           </h2>
-          <p>
+          <p className="reveal-fade" style={{ transitionDelay: '300ms' }}>
             Before the committee reaches a verdict, the case must survive its
             strongest counterargument. No thesis passes unchallenged.
           </p>
         </div>
 
         <div
-          className={`advocate-stage${challenged ? ' advocate-stage--challenged' : ''}`}
+          className={`advocate-stage reveal-fade${challenged ? ' advocate-stage--challenged' : ''}`}
+          style={{ transitionDelay: '450ms' }}
         >
           <div className="advocate-thesis">
             <p className="advocate-label advocate-label--bull">
@@ -62,7 +68,7 @@ export function DevilsAdvocate() {
           </div>
         </div>
 
-        <div className="advocate-action">
+        <div className="advocate-action reveal-scale" style={{ transitionDelay: '600ms' }}>
           <button
             className="button button--secondary advocate-trigger"
             type="button"
@@ -77,7 +83,7 @@ export function DevilsAdvocate() {
           </button>
         </div>
 
-        <p className="advocate-disclosure">
+        <p className="advocate-disclosure reveal-fade" style={{ transitionDelay: '750ms' }}>
           Illustrative reasoning · Not investment advice
         </p>
       </div>
