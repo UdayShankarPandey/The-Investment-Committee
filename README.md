@@ -52,22 +52,22 @@ The project relies on a bespoke, premium editorial aesthetic:
 
 ## Technology & Implementation State
 
-### Currently Implemented (Sprint 1 — Application Service Layer)
-- **Frontend**: React 19, TypeScript, Vite, Vanilla CSS design system.
-- **Backend Service Layer**: Node.js, Express, TypeScript (`backend/`).
-- **Observability Foundation**: Prometheus-compatible metrics endpoint (`GET /metrics`) via `prom-client`.
+### Currently Implemented (Sprint 2 — Containerization)
+- **Frontend Container**: Multi-stage Dockerfile (`Dockerfile`) compiling React 19 + TypeScript + Vite into static assets served by a minimal `nginx:1.27-alpine` web server with SPA routing and API reverse-proxying.
+- **Backend Container**: Multi-stage Dockerfile (`backend/Dockerfile`) compiling Node.js + Express TypeScript service into a minimal `node:22-alpine` unprivileged runtime (`USER node`) with native health monitoring.
+- **Orchestration**: Docker Compose (`docker-compose.yml`) coordinating both services on an isolated bridge network (`app-network`) with health-aware dependency startup (`service_healthy`).
+- **Observability Foundation**: Prometheus-compatible metrics endpoint (`GET /metrics`) via `prom-client` on backend port 3000 and reverse-proxied through frontend port 80.
 - **Health & Probes**: Standardized liveness/readiness probe (`GET /health`) and status endpoint (`GET /api/status`).
-- **Testing**: Vitest + Supertest automated API test suite.
+- **Testing**: Vitest + Supertest automated API test suite for backend, ESLint and TypeScript compilation gates for both layers.
 
 ### Planned Architecture (Subsequent Sprints)
-- **Sprint 2**: Docker containerization & Docker Compose.
 - **Sprint 3**: GitHub Actions CI/CD pipelines & Amazon ECR publishing.
 - **Sprint 4**: AWS Infrastructure provisioning via Terraform.
 - **Sprint 5**: Kubernetes & Amazon EKS orchestration.
 - **Sprint 6**: Prometheus server scraping & Grafana monitoring dashboards.
 - **Sprint 7**: Reliability, failure drills, and security hardening.
 
-*Notice: This repository does NOT yet contain Dockerfiles, CI/CD pipelines, live cloud infrastructure, Prometheus scraping servers, or live financial LLM engines. Those belong to future planned sprints.*
+*Notice: This repository does NOT yet contain GitHub Actions workflows, Amazon ECR publishing, Terraform configurations, Kubernetes manifests, Prometheus scraping servers, or live financial LLM engines. Those belong to future planned sprints.*
 
 ## Project Structure
 
@@ -81,6 +81,8 @@ The project relies on a bespoke, premium editorial aesthetic:
 │   │   ├── metrics.ts        # Prometheus metrics registry & instrumentation
 │   │   └── server.ts         # Server entrypoint with graceful shutdown
 │   ├── tests/                # Automated API integration tests (Vitest + Supertest)
+│   ├── .dockerignore         # Docker context exclusions for backend
+│   ├── Dockerfile            # Multi-stage Dockerfile for Node.js backend
 │   ├── package.json
 │   ├── tsconfig.json
 │   └── vitest.config.ts
@@ -93,6 +95,11 @@ The project relies on a bespoke, premium editorial aesthetic:
 │   │   └── globals.css   
 │   ├── App.tsx           
 │   └── main.tsx          
+├── .dockerignore             # Docker context exclusions for frontend
+├── .env.example              # Non-secret environment variable template
+├── Dockerfile                # Multi-stage Dockerfile for React/Vite/Nginx frontend
+├── docker-compose.yml        # Docker Compose service orchestration
+├── nginx.conf                # Nginx SPA fallback and API reverse proxy config
 ├── eslint.config.js
 ├── package.json
 ├── tsconfig.json
@@ -140,6 +147,82 @@ Run the Node.js + Express API service layer, tests, and build:
 | `/health` | `GET` | `application/json` | Liveness & readiness probe for container orchestration (`{"status":"ok"}`) |
 | `/api/status` | `GET` | `application/json` | Service runtime metadata and version information |
 | `/metrics` | `GET` | `text/plain` | Prometheus exposition format metrics (process & HTTP duration/counts) |
+
+## Docker & Containerization
+
+The project provides production-grade multi-stage Dockerfiles and Docker Compose orchestration for local development and container verification.
+
+### Prerequisites
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) or Docker Engine (v24.0+)
+- Docker Compose (v2.20+)
+
+### Image Architecture
+
+- **Frontend Image** (`Dockerfile`):
+  - **Build Stage**: `node:22-alpine` runs `npm ci` and `npm run build` to generate compiled static assets.
+  - **Runtime Stage**: `nginx:1.27-alpine` serves static assets, enforces SPA routing fallback, and reverse-proxies `/api/`, `/health`, and `/metrics` requests to the backend container over Docker's internal network.
+  - **Exposed Port**: `80`
+- **Backend Image** (`backend/Dockerfile`):
+  - **Build Stage**: `node:22-alpine` runs `npm ci` and compiles TypeScript to `backend/dist`.
+  - **Runtime Stage**: `node:22-alpine` with `NODE_ENV=production`, installs production-only dependencies (`npm ci --omit=dev`), runs under unprivileged user `node` (`USER node`), and executes `node dist/server.js`.
+  - **Exposed Port**: `3000`
+
+### Building Images Locally
+
+```bash
+# Build frontend image independently
+docker build -t investment-committee-frontend:latest .
+
+# Build backend image independently
+docker build -t investment-committee-backend:latest ./backend
+```
+
+### Running with Docker Compose
+
+To start both services orchestrated on the internal bridge network (`app-network`):
+
+```bash
+# Build and start all services in detached mode
+docker compose up -d --build
+
+# Check status and health of containers
+docker compose ps
+
+# View unified or service logs
+docker compose logs -f
+docker compose logs backend
+docker compose logs frontend
+
+# Stop and remove containers and network
+docker compose down
+```
+
+### Local Access & Port Mappings
+
+| Service | Container Port | Host Port | URL | Health Check |
+|---|---|---|---|---|
+| **Frontend** | `80` | `80` | `http://localhost/` | `wget http://127.0.0.1:80/` |
+| **Backend** | `3000` | `3000` | `http://localhost:3000/` | `node fetch('http://127.0.0.1:3000/health')` |
+
+### Service Communication Architecture
+
+```text
+Host Browser
+  │
+  ├──> http://localhost:80 (Frontend UI & Nginx Reverse Proxy)
+  │      │
+  │      └──(Docker Network: app-network)──> http://backend:3000/api/*
+  │                                      ──> http://backend:3000/health
+  │                                      ──> http://backend:3000/metrics
+  │
+  └──> http://localhost:3000 (Direct Host Access for API & Metrics)
+```
+
+1. **Host-to-Container**: Both frontend (`http://localhost:80`) and backend (`http://localhost:3000`) publish ports to the host machine.
+2. **Container-to-Container**: Frontend reverse-proxies `/api/`, `/health`, and `/metrics` to `http://backend:3000` using Docker's internal DNS resolution on `app-network`.
+3. **CORS Configuration**: Backend `ALLOWED_ORIGINS` permits requests originating from browser clients at `http://localhost`, `http://localhost:80`, and `http://localhost:5173`.
+4. **Health Dependencies**: Docker Compose starts the backend container first and utilizes `condition: service_healthy` before marking frontend dependencies satisfied.
 
 ## Honesty & Disclosure
 

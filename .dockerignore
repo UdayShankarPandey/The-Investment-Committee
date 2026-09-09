@@ -1,0 +1,19 @@
+# Build artifacts and dependencies
+node_modules
+dist
+
+# Companion backend service (built in separate context)
+backend
+
+# Git metadata and documentation
+.git
+.gitignore
+README.md
+DECISIONS.md
+
+# Environment and logs
+.env
+.env.*
+*.log
+*.tsbuildinfo
+.DS_Store

@@ -1,0 +1,19 @@
+# Dependencies and build output
+node_modules
+dist
+
+# Testing and development tooling
+tests
+vitest.config.ts
+eslint.config.js
+
+# Git metadata and temporary files
+.git
+.gitignore
+*.log
+*.tsbuildinfo
+.DS_Store
+
+# Environment files
+.env
+.env.*
