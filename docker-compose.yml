@@ -30,14 +30,14 @@ services:
     container_name: investment-committee-frontend
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "80:8080"
     networks:
       - app-network
     depends_on:
       backend:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:80/ || exit 1"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/ || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 3

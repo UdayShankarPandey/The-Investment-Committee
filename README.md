@@ -161,8 +161,8 @@ The project provides production-grade multi-stage Dockerfiles and Docker Compose
 
 - **Frontend Image** (`Dockerfile`):
   - **Build Stage**: `node:22-alpine` runs `npm ci` and `npm run build` to generate compiled static assets.
-  - **Runtime Stage**: `nginx:1.27-alpine` serves static assets, enforces SPA routing fallback, and reverse-proxies `/api/`, `/health`, and `/metrics` requests to the backend container over Docker's internal network.
-  - **Exposed Port**: `80`
+  - **Runtime Stage**: `nginx:1.27-alpine` configured for unprivileged execution (`USER nginx`), serves static assets, enforces SPA routing fallback, and reverse-proxies `/api/`, `/health`, and `/metrics` requests to the backend container over Docker's internal network.
+  - **Exposed Port**: `8080` (unprivileged container port, mapped to host port `80`)
 - **Backend Image** (`backend/Dockerfile`):
   - **Build Stage**: `node:22-alpine` runs `npm ci` and compiles TypeScript to `backend/dist`.
   - **Runtime Stage**: `node:22-alpine` with `NODE_ENV=production`, installs production-only dependencies (`npm ci --omit=dev`), runs under unprivileged user `node` (`USER node`), and executes `node dist/server.js`.
@@ -202,7 +202,7 @@ docker compose down
 
 | Service | Container Port | Host Port | URL | Health Check |
 |---|---|---|---|---|
-| **Frontend** | `80` | `80` | `http://localhost/` | `wget http://127.0.0.1:80/` |
+| **Frontend** | `8080` | `80` | `http://localhost/` | `wget http://127.0.0.1:8080/` |
 | **Backend** | `3000` | `3000` | `http://localhost:3000/` | `node fetch('http://127.0.0.1:3000/health')` |
 
 ### Service Communication Architecture
