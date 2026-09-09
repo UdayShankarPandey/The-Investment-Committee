@@ -50,28 +50,53 @@ The project relies on a bespoke, premium editorial aesthetic:
 - A restrained, analytical visual language.
 - A deliberate avoidance of generic glowing "AI SaaS" visual patterns.
 
-## Technology
+## Technology & Implementation State
 
-The repository is a lightweight, performant frontend built with:
-- React
-- TypeScript
-- Vite
-- Vanilla CSS
+### Currently Implemented (Sprint 1 — Application Service Layer)
+- **Frontend**: React 19, TypeScript, Vite, Vanilla CSS design system.
+- **Backend Service Layer**: Node.js, Express, TypeScript (`backend/`).
+- **Observability Foundation**: Prometheus-compatible metrics endpoint (`GET /metrics`) via `prom-client`.
+- **Health & Probes**: Standardized liveness/readiness probe (`GET /health`) and status endpoint (`GET /api/status`).
+- **Testing**: Vitest + Supertest automated API test suite.
 
-*Explicit Notice: This repository contains the frontend product experience only. It does not contain a live LLM backend, LangGraph, databases, SSE streaming, or active market-data integrations from the conceptual product.*
+### Planned Architecture (Subsequent Sprints)
+- **Sprint 2**: Docker containerization & Docker Compose.
+- **Sprint 3**: GitHub Actions CI/CD pipelines & Amazon ECR publishing.
+- **Sprint 4**: AWS Infrastructure provisioning via Terraform.
+- **Sprint 5**: Kubernetes & Amazon EKS orchestration.
+- **Sprint 6**: Prometheus server scraping & Grafana monitoring dashboards.
+- **Sprint 7**: Reliability, failure drills, and security hardening.
+
+*Notice: This repository does NOT yet contain Dockerfiles, CI/CD pipelines, live cloud infrastructure, Prometheus scraping servers, or live financial LLM engines. Those belong to future planned sprints.*
 
 ## Project Structure
 
 ```text
-src/
-├── components/
-│   ├── layout/       
-│   ├── sections/     
-│   └── ui/           
-├── styles/
-│   └── globals.css   
-├── App.tsx           
-└── main.tsx          
+.
+├── backend/
+│   ├── src/
+│   │   ├── middleware/       # 404 & centralized error handlers
+│   │   ├── routes/           # /health, /api/status, /metrics
+│   │   ├── app.ts            # Express application composition
+│   │   ├── metrics.ts        # Prometheus metrics registry & instrumentation
+│   │   └── server.ts         # Server entrypoint with graceful shutdown
+│   ├── tests/                # Automated API integration tests (Vitest + Supertest)
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── vitest.config.ts
+├── src/
+│   ├── components/
+│   │   ├── layout/       
+│   │   ├── sections/     
+│   │   └── ui/           
+│   ├── styles/
+│   │   └── globals.css   
+│   ├── App.tsx           
+│   └── main.tsx          
+├── eslint.config.js
+├── package.json
+├── tsconfig.json
+└── vite.config.ts
 ```
 
 ## Accessibility & Responsive Design
@@ -86,13 +111,35 @@ The implementation adheres to rigorous accessibility and responsive standards:
 
 ## Development
 
-To run the project locally, use the following scripts defined in `package.json`:
+### Frontend (Root)
 
-- `npm install` — Installs project dependencies.
-- `npm run dev` — Starts the Vite development server.
-- `npm run typecheck` — Runs TypeScript type-checking (`tsc`) without emitting files.
+Run the frontend development server and verification gates:
+
+- `npm install` — Installs root frontend dependencies.
+- `npm run dev` — Starts the Vite development server (default: `http://localhost:5173`).
+- `npm run typecheck` — Runs TypeScript type-checking (`tsc`) for frontend without emitting files.
 - `npm run lint` — Runs ESLint to verify code quality.
-- `npm run build` — Runs the typechecker and creates a production build.
+- `npm run build` — Runs the typechecker and generates a production bundle.
+
+### Backend Service Layer (`backend/`)
+
+Run the Node.js + Express API service layer, tests, and build:
+
+- `cd backend && npm install` — Installs backend dependencies.
+- `npm run dev` — Runs the Express API with `tsx watch` (hot-reloading, default: `http://localhost:3000`).
+- `npm test` — Executes automated API integration tests via Vitest.
+- `npm run typecheck` — Runs TypeScript type-checking for backend services.
+- `npm run lint` — Runs ESLint across backend source and test files.
+- `npm run build` — Compiles TypeScript into production JavaScript in `backend/dist`.
+- `npm start` — Runs the compiled production server (`node dist/server.js`).
+
+### Backend API Endpoints
+
+| Endpoint | Method | Response Format | Purpose |
+|---|---|---|---|
+| `/health` | `GET` | `application/json` | Liveness & readiness probe for container orchestration (`{"status":"ok"}`) |
+| `/api/status` | `GET` | `application/json` | Service runtime metadata and version information |
+| `/metrics` | `GET` | `text/plain` | Prometheus exposition format metrics (process & HTTP duration/counts) |
 
 ## Honesty & Disclosure
 
@@ -111,10 +158,14 @@ Please refer to `DECISIONS.md` for the technical decisions, engineering trade-of
 ## Verification
 
 The codebase has been verified against the following checks:
-- `npm run lint` (PASS)
-- `npm run typecheck` (PASS)
-- `npm run build` (PASS)
-- Manual responsive and cross-viewport verification across mobile and desktop.
+- Frontend: `npm run lint` (PASS)
+- Frontend: `npm run typecheck` (PASS)
+- Frontend: `npm run build` (PASS)
+- Backend: `npm test` (PASS — 4 test suites, 5 tests passing)
+- Backend: `npm run typecheck` (PASS)
+- Backend: `npm run lint` (PASS)
+- Backend: `npm run build` (PASS)
+- Manual responsive, cross-viewport, and runtime HTTP verification across frontend and backend.
 
 ## Submission
 
