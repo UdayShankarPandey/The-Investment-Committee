@@ -255,7 +255,9 @@ GitHub Push / Pull Request
   - Top-level workflow permissions are strictly `contents: read`.
   - Cloud token issuance (`id-token: write`) is restricted to the ECR publishing job on trusted branch pushes.
   - Pull requests run in an unprivileged context without access to AWS credentials or publishing privileges.
-- **ECR Destination**: Canonical release artifacts are published to `<aws-account>.dkr.ecr.<aws-region>.amazonaws.com/<ecr-repository>:<git-commit-sha>`.
+  - **OIDC-Only Authentication**: AWS authentication is performed strictly via OpenID Connect (OIDC) federation (`audience: sts.amazonaws.com`). Static IAM access keys (`AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`) are prohibited and unsupported.
+- **ECR Destination**: Canonical release artifacts are published to `<aws-account>.dkr.ecr.ap-south-1.amazonaws.com/the-investment-committee:<git-commit-sha>`.
+- **Required GitHub Configuration**: Repository variable or secret `AWS_ROLE_ARN` specifying the IAM Role ARN with trust policy restricted to `repo:UdayShankarPandey/The-Investment-Committee:ref:refs/heads/main`.
 - **Planned Scope**: Deployment to Kubernetes / Amazon EKS and Terraform infrastructure provisioning are planned for subsequent sprints.
 
 ## Honesty & Disclosure
