@@ -52,22 +52,22 @@ The project relies on a bespoke, premium editorial aesthetic:
 
 ## Technology & Implementation State
 
-### Currently Implemented (Sprint 2 — Containerization)
-- **Frontend Container**: Multi-stage Dockerfile (`Dockerfile`) compiling React 19 + TypeScript + Vite into static assets served by a minimal `nginx:1.27-alpine` web server with SPA routing and API reverse-proxying.
-- **Backend Container**: Multi-stage Dockerfile (`backend/Dockerfile`) compiling Node.js + Express TypeScript service into a minimal `node:22-alpine` unprivileged runtime (`USER node`) with native health monitoring.
-- **Orchestration**: Docker Compose (`docker-compose.yml`) coordinating both services on an isolated bridge network (`app-network`) with health-aware dependency startup (`service_healthy`).
-- **Observability Foundation**: Prometheus-compatible metrics endpoint (`GET /metrics`) via `prom-client` on backend port 3000 and reverse-proxied through frontend port 80.
-- **Health & Probes**: Standardized liveness/readiness probe (`GET /health`) and status endpoint (`GET /api/status`).
-- **Testing**: Vitest + Supertest automated API test suite for backend, ESLint and TypeScript compilation gates for both layers.
+### Currently Implemented (Sprint 3 — Delivery Automation)
+- **CI/CD Delivery Pipeline**: GitHub Actions workflow (`.github/workflows/ci.yml`) enforcing automated quality gates, container build validation, and Amazon ECR publishing.
+- **Frontend Quality Gates**: Node.js 22 environment executing `npm ci`, ESLint (`npm run lint`), TypeScript validation (`npm run typecheck`), and production build (`npm run build`).
+- **Backend Quality Gates**: Node.js 22 environment executing `npm ci`, Vitest automated API integration suite (`npm test`), ESLint (`npm run lint`), TypeScript validation (`npm run typecheck`), and JavaScript compilation (`npm run build`).
+- **Container Build & Tagging**: Production multi-stage Docker build tagged with the exact immutable commit SHA (`${{ github.sha }}`) for deterministic provenance and traceability.
+- **Amazon ECR Publishing**: Automated publication to Amazon ECR on trusted pushes to `main` with AWS OIDC federation (`id-token: write`).
+- **PR Security Isolation**: Pull requests trigger full frontend/backend quality gates and local Docker validation builds while completely isolating cloud credentials and preventing untrusted artifact publication.
+- **Containerization (Sprint 2 Baseline)**: Multi-stage Dockerfiles for unprivileged Nginx frontend (port 8080) and Node.js backend (port 3000), orchestrated via Docker Compose with health-checked dependencies.
 
 ### Planned Architecture (Subsequent Sprints)
-- **Sprint 3**: GitHub Actions CI/CD pipelines & Amazon ECR publishing.
 - **Sprint 4**: AWS Infrastructure provisioning via Terraform.
 - **Sprint 5**: Kubernetes & Amazon EKS orchestration.
 - **Sprint 6**: Prometheus server scraping & Grafana monitoring dashboards.
 - **Sprint 7**: Reliability, failure drills, and security hardening.
 
-*Notice: This repository does NOT yet contain GitHub Actions workflows, Amazon ECR publishing, Terraform configurations, Kubernetes manifests, Prometheus scraping servers, or live financial LLM engines. Those belong to future planned sprints.*
+*Notice: This repository does NOT yet contain Terraform configurations, Kubernetes manifests, Amazon EKS deployment controllers, or Prometheus scraping servers. Those belong to future planned sprints.*
 
 ## Project Structure
 
@@ -223,6 +223,40 @@ Host Browser
 2. **Container-to-Container**: Frontend reverse-proxies `/api/`, `/health`, and `/metrics` to `http://backend:3000` using Docker's internal DNS resolution on `app-network`.
 3. **CORS Configuration**: Backend `ALLOWED_ORIGINS` permits requests originating from browser clients at `http://localhost`, `http://localhost:80`, and `http://localhost:5173`.
 4. **Health Dependencies**: Docker Compose starts the backend container first and utilizes `condition: service_healthy` before marking frontend dependencies satisfied.
+
+## Continuous Integration & Delivery (CI/CD — Sprint 3)
+
+The project incorporates an automated GitHub Actions delivery pipeline (`.github/workflows/ci.yml`) enforcing automated quality gates, container builds, and Amazon ECR publishing.
+
+### Pipeline Architecture
+
+```text
+GitHub Push / Pull Request
+         │
+         ├──> Job: Frontend Quality Gates (npm ci, lint, typecheck, build)
+         ├──> Job: Backend Quality Gates (npm ci, test, lint, typecheck, build)
+         │
+         ├──[IF pull_request]──> Job: Docker Build Validation (isolated, zero cloud credentials)
+         │
+         └──[IF push to main]──> Job: Build & Publish to Amazon ECR
+                                   ├── AWS OIDC Authentication (id-token: write)
+                                   ├── Amazon ECR Login
+                                   ├── Production Docker Image Build
+                                   ├── Tag with Exact Git SHA (${{ github.sha }})
+                                   └── Push Immutable Image to ECR
+```
+
+### Key Workflow Characteristics
+
+- **Triggers**: Automated on pushes to `main` and pull requests targeting `main`.
+- **Quality Gates**: Both frontend (`npm ci`, `lint`, `typecheck`, `build`) and backend (`npm ci`, `test`, `lint`, `typecheck`, `build`) must pass before downstream container build or release jobs execute.
+- **Traceability & Immutability**: Production images are tagged with the exact 40-character Git commit SHA (`${{ github.sha }}`). The immutable image tag corresponds directly to the repository commit.
+- **Security & Least Privilege**:
+  - Top-level workflow permissions are strictly `contents: read`.
+  - Cloud token issuance (`id-token: write`) is restricted to the ECR publishing job on trusted branch pushes.
+  - Pull requests run in an unprivileged context without access to AWS credentials or publishing privileges.
+- **ECR Destination**: Canonical release artifacts are published to `<aws-account>.dkr.ecr.<aws-region>.amazonaws.com/<ecr-repository>:<git-commit-sha>`.
+- **Planned Scope**: Deployment to Kubernetes / Amazon EKS and Terraform infrastructure provisioning are planned for subsequent sprints.
 
 ## Honesty & Disclosure
 
