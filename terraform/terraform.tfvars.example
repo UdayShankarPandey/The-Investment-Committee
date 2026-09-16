@@ -1,0 +1,28 @@
+# ==============================================================================
+# The Investment Committee — Example Terraform Configuration Variables
+# Copy this file to terraform.tfvars for local customization.
+# Contains zero secrets or credentials.
+# ==============================================================================
+
+aws_region  = "ap-south-1"
+environment = "production"
+
+# Network CIDRs (2-AZ topology ready for EKS)
+vpc_cidr             = "10.0.0.0/16"
+availability_zones   = ["ap-south-1a", "ap-south-1b"]
+public_subnet_cidrs  = ["10.0.1.0/24", "10.0.2.0/24"]
+private_subnet_cidrs = ["10.0.10.0/24", "10.0.11.0/24"]
+
+# CRITICAL COST CONTROLS (Defaults ensure ZERO recurring charges in Sprint 4)
+enable_eks           = false
+enable_nat_gateway   = false
+enable_load_balancer = false
+manage_ecr           = false
+manage_iam_role      = false
+
+# EKS Settings (Intended for Sprint 5 runtime verification only)
+eks_cluster_version     = "1.31"
+eks_node_instance_types = ["t3.small"]
+eks_desired_size        = 1
+eks_min_size            = 1
+eks_max_size            = 2

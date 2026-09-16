@@ -52,22 +52,20 @@ The project relies on a bespoke, premium editorial aesthetic:
 
 ## Technology & Implementation State
 
-### Currently Implemented (Sprint 3 — Delivery Automation)
-- **CI/CD Delivery Pipeline**: GitHub Actions workflow (`.github/workflows/ci.yml`) enforcing automated quality gates, container build validation, and Amazon ECR publishing.
-- **Frontend Quality Gates**: Node.js 22 environment executing `npm ci`, ESLint (`npm run lint`), TypeScript validation (`npm run typecheck`), and production build (`npm run build`).
-- **Backend Quality Gates**: Node.js 22 environment executing `npm ci`, Vitest automated API integration suite (`npm test`), ESLint (`npm run lint`), TypeScript validation (`npm run typecheck`), and JavaScript compilation (`npm run build`).
-- **Container Build & Tagging**: Production multi-stage Docker build tagged with the exact immutable commit SHA (`${{ github.sha }}`) for deterministic provenance and traceability.
-- **Amazon ECR Publishing**: Automated publication to Amazon ECR on trusted pushes to `main` with AWS OIDC federation (`id-token: write`).
-- **PR Security Isolation**: Pull requests trigger full frontend/backend quality gates and local Docker validation builds while completely isolating cloud credentials and preventing untrusted artifact publication.
+### Currently Implemented (Sprint 4 — Infrastructure as Code)
+- **Terraform Infrastructure as Code (`terraform/`)**: Modular, reproducible Terraform architecture defining dedicated 2-AZ VPC, public/private subnets, Internet Gateway, route tables, least-privilege security groups, non-destructive Amazon ECR integration, and Amazon EKS cluster architecture.
+- **Strict Budget & Cost Controls**: Engineered for academic budget preservation (~$35 AWS budget) with default switches deactivating expensive recurring resources (`enable_eks = false`, `enable_nat_gateway = false`, `enable_load_balancer = false`).
+- **Safe ECR & IAM Preservation**: Integrates existing Sprint 3 ECR repository (`the-investment-committee`) and GitHub Actions IAM role (`TheInvestmentCommittee-GitHubActions-ECR`) via data sources, guaranteeing zero recreation, drift, or image loss.
+- **CI/CD Delivery Pipeline (Sprint 3 Baseline)**: GitHub Actions workflow (`.github/workflows/ci.yml`) enforcing automated quality gates, container build validation, immutable SHA tagging, and Amazon ECR publishing via OIDC.
+- **Frontend & Backend Quality Gates**: Node.js 22 environment executing linting, typechecking, Vitest automated testing, and production builds across root and backend services.
 - **Containerization (Sprint 2 Baseline)**: Multi-stage Dockerfiles for unprivileged Nginx frontend (port 8080) and Node.js backend (port 3000), orchestrated via Docker Compose with health-checked dependencies.
 
 ### Planned Architecture (Subsequent Sprints)
-- **Sprint 4**: AWS Infrastructure provisioning via Terraform.
-- **Sprint 5**: Kubernetes & Amazon EKS orchestration.
+- **Sprint 5**: Kubernetes & Amazon EKS runtime orchestration (activating `enable_eks = true`).
 - **Sprint 6**: Prometheus server scraping & Grafana monitoring dashboards.
 - **Sprint 7**: Reliability, failure drills, and security hardening.
 
-*Notice: This repository does NOT yet contain Terraform configurations, Kubernetes manifests, Amazon EKS deployment controllers, or Prometheus scraping servers. Those belong to future planned sprints.*
+*Notice: This repository contains Terraform infrastructure code under `terraform/`. Kubernetes manifests, Amazon EKS runtime deployment controllers, and Prometheus scraping servers belong to future planned sprints.*
 
 ## Project Structure
 
@@ -95,6 +93,19 @@ The project relies on a bespoke, premium editorial aesthetic:
 │   │   └── globals.css   
 │   ├── App.tsx           
 │   └── main.tsx          
+├── terraform/                # Infrastructure as Code (Sprint 4)
+│   ├── data.tf               # Data sources for existing ECR & IAM roles
+│   ├── ecr.tf                # Non-destructive ECR repository integration
+│   ├── eks.tf                # Amazon EKS cluster & node group definition (conditional)
+│   ├── iam.tf                # EKS IAM roles & OIDC trust federation
+│   ├── locals.tf             # Resource naming & Kubernetes tags
+│   ├── outputs.tf            # VPC, subnets, ECR, and conditional EKS outputs
+│   ├── providers.tf          # AWS provider configuration & default tags
+│   ├── README.md             # IaC architecture, cost breakdown, & CLI guide
+│   ├── security-groups.tf    # Least-privilege SGs (zero open SSH)
+│   ├── terraform.tfvars.example # Safe variable template (0 secrets)
+│   ├── variables.tf          # Cost switches (enable_eks=false, etc.)
+│   └── versions.tf           # Pinned Terraform (>=1.5) & AWS provider (~>5.80)
 ├── .dockerignore             # Docker context exclusions for frontend
 ├── .env.example              # Non-secret environment variable template
 ├── Dockerfile                # Multi-stage Dockerfile for React/Vite/Nginx frontend
