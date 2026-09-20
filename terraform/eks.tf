@@ -11,6 +11,10 @@ resource "aws_eks_cluster" "this" {
   role_arn = aws_iam_role.eks_cluster[0].arn
   version  = var.eks_cluster_version
 
+  upgrade_policy {
+    support_type = "STANDARD"
+  }
+
   vpc_config {
     subnet_ids              = concat(aws_subnet.public[*].id, aws_subnet.private[*].id)
     security_group_ids      = [aws_security_group.eks_cluster.id]
