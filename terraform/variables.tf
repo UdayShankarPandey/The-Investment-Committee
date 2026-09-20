@@ -85,9 +85,9 @@ variable "eks_cluster_name" {
 }
 
 variable "eks_cluster_version" {
-  description = "Kubernetes control plane version for Amazon EKS."
+  description = "Kubernetes control plane version for Amazon EKS (uses active Standard Support version 1.32 to avoid extended support surcharge)."
   type        = string
-  default     = "1.31"
+  default     = "1.32"
 }
 
 variable "eks_node_instance_types" {
