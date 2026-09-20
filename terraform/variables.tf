@@ -119,3 +119,8 @@ variable "github_repository" {
   type        = string
   default     = "UdayShankarPandey/The-Investment-Committee"
 }
+variable "eks_node_subnet_type" {
+  description = "Subnet placement for EKS worker nodes ('public' or 'private'). Default 'public' enables worker nodes to pull ECR images and join the cluster via Internet Gateway without incurring recurring NAT Gateway fees ($32.40/mo)."
+  type        = string
+  default     = "public"
+}

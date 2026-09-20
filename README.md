@@ -52,20 +52,18 @@ The project relies on a bespoke, premium editorial aesthetic:
 
 ## Technology & Implementation State
 
-### Currently Implemented (Sprint 4 — Infrastructure as Code)
-- **Terraform Infrastructure as Code (`terraform/`)**: Modular, reproducible Terraform architecture defining dedicated 2-AZ VPC, public/private subnets, Internet Gateway, route tables, least-privilege security groups, non-destructive Amazon ECR integration, and Amazon EKS cluster architecture.
-- **Strict Budget & Cost Controls**: Engineered for academic budget preservation (~$35 AWS budget) with default switches deactivating expensive recurring resources (`enable_eks = false`, `enable_nat_gateway = false`, `enable_load_balancer = false`).
-- **Safe ECR & IAM Preservation**: Integrates existing Sprint 3 ECR repository (`the-investment-committee`) and GitHub Actions IAM role (`TheInvestmentCommittee-GitHubActions-ECR`) via data sources, guaranteeing zero recreation, drift, or image loss.
-- **CI/CD Delivery Pipeline (Sprint 3 Baseline)**: GitHub Actions workflow (`.github/workflows/ci.yml`) enforcing automated quality gates, container build validation, immutable SHA tagging, and Amazon ECR publishing via OIDC.
-- **Frontend & Backend Quality Gates**: Node.js 22 environment executing linting, typechecking, Vitest automated testing, and production builds across root and backend services.
-- **Containerization (Sprint 2 Baseline)**: Multi-stage Dockerfiles for unprivileged Nginx frontend (port 8080) and Node.js backend (port 3000), orchestrated via Docker Compose with health-checked dependencies.
+### Currently Implemented (Sprint 5 — Kubernetes & Amazon EKS Orchestration)
+- **Kubernetes Manifests & Orchestration (`k8s/`)**: Declarative Kubernetes manifests bundled via Kustomize (`kustomization.yaml`), featuring workload isolation in the `investment-committee` namespace, Node.js backend Deployment, unprivileged React/Nginx frontend Deployment, internal ClusterIP Services (`backend:3000`, `frontend:8080`), ConfigMap configuration, and L7 Ingress routing.
+- **Zero-Cost NAT-Free EKS Architecture**: Engineered to preserve the ~$35 AWS budget constraint. Worker nodes run on a single cost-effective `t3.small` instance in public subnets via Internet Gateway, completely eliminating recurring NAT Gateway charges ($32.40/mo).
+- **Service Discovery & Non-Root Security**: Frontend Nginx reverse-proxies `/api/*`, `/health`, and `/metrics` directly to `http://backend:3000` via CoreDNS. Pods run with dropped capabilities (`drop: ["ALL"]`) under unprivileged users (`node:1000`, `nginx:101`).
+- **Immutable Release Traceability**: Kubernetes Deployments reference exact immutable Git commit SHA image tags from Amazon ECR (`719982590258.dkr.ecr.ap-south-1.amazonaws.com/the-investment-committee:<commit-sha>`).
+- **Terraform Infrastructure as Code (`terraform/` — Sprint 4 Baseline)**: Modular, reproducible Terraform architecture defining dedicated 2-AZ VPC, subnets, Internet Gateway, route tables, least-privilege security groups, non-destructive ECR data-source integration, and Amazon EKS cluster architecture.
+- **CI/CD Delivery Pipeline (`.github/workflows/ci.yml` — Sprint 3 Baseline)**: GitHub Actions workflow enforcing automated quality gates, container build validation, immutable SHA tagging, and Amazon ECR publishing via OIDC.
+- **Containerization (Sprint 2 Baseline)**: Multi-stage Dockerfiles for frontend (port 8080) and backend (port 3000), orchestrated via Docker Compose with health-checked dependencies.
 
 ### Planned Architecture (Subsequent Sprints)
-- **Sprint 5**: Kubernetes & Amazon EKS runtime orchestration (activating `enable_eks = true`).
 - **Sprint 6**: Prometheus server scraping & Grafana monitoring dashboards.
 - **Sprint 7**: Reliability, failure drills, and security hardening.
-
-*Notice: This repository contains Terraform infrastructure code under `terraform/`. Kubernetes manifests, Amazon EKS runtime deployment controllers, and Prometheus scraping servers belong to future planned sprints.*
 
 ## Project Structure
 
@@ -84,6 +82,16 @@ The project relies on a bespoke, premium editorial aesthetic:
 │   ├── package.json
 │   ├── tsconfig.json
 │   └── vitest.config.ts
+├── k8s/                      # Kubernetes Orchestration (Sprint 5)
+│   ├── backend-deployment.yaml  # Node.js backend Deployment (health probes, non-root)
+│   ├── backend-service.yaml     # Internal ClusterIP service on port 3000
+│   ├── configmap.yaml           # Runtime environment variables
+│   ├── frontend-deployment.yaml # Nginx/React frontend Deployment (port 8080)
+│   ├── frontend-service.yaml    # Internal ClusterIP service on port 8080
+│   ├── ingress.yaml             # L7 Ingress path routing
+│   ├── kustomization.yaml       # Kustomize manifest bundle
+│   ├── namespace.yaml           # Dedicated 'investment-committee' namespace
+│   └── README.md                # K8s architecture & verification documentation
 ├── src/
 │   ├── components/
 │   │   ├── layout/       

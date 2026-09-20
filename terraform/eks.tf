@@ -35,7 +35,7 @@ resource "aws_eks_node_group" "this" {
   cluster_name    = aws_eks_cluster.this[0].name
   node_group_name = "${local.name_prefix}-ng"
   node_role_arn   = aws_iam_role.eks_node[0].arn
-  subnet_ids      = aws_subnet.private[*].id
+  subnet_ids      = var.eks_node_subnet_type == "public" ? aws_subnet.public[*].id : aws_subnet.private[*].id
 
   instance_types = var.eks_node_instance_types
 

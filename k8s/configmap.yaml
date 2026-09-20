@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: investment-committee-config
+  namespace: investment-committee
+  labels:
+    app.kubernetes.io/name: the-investment-committee
+    app.kubernetes.io/part-of: the-investment-committee
+data:
+  NODE_ENV: "production"
+  PORT: "3000"
+  HOST: "0.0.0.0"
+  ALLOWED_ORIGINS: "http://localhost,http://localhost:80,http://localhost:8080"
