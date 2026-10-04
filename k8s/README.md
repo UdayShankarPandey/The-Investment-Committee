@@ -34,7 +34,7 @@ This directory contains production-ready, declarative Kubernetes manifests and K
 
 ### 3. Immutable Release Image Provenance
 - Container image tags are locked to the exact 40-character Git commit SHA:
-  `719982590258.dkr.ecr.ap-south-1.amazonaws.com/the-investment-committee:c429a73148ccc5a6f7854487e4e22ef10b26f0aa`
+  `107585010019.dkr.ecr.ap-south-1.amazonaws.com/the-investment-committee:c429a73148ccc5a6f7854487e4e22ef10b26f0aa`
 - Avoids mutable floating tags (`latest`, `dev`, `prod`).
 
 ### 4. Zero-Privilege Security Contexts

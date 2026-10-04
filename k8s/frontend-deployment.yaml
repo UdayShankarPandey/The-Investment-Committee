@@ -31,7 +31,7 @@ spec:
         fsGroup: 101
       containers:
         - name: frontend
-          image: 719982590258.dkr.ecr.ap-south-1.amazonaws.com/the-investment-committee:c429a73148ccc5a6f7854487e4e22ef10b26f0aa
+          image: 107585010019.dkr.ecr.ap-south-1.amazonaws.com/the-investment-committee:c429a73148ccc5a6f7854487e4e22ef10b26f0aa
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
