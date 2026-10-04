@@ -6,7 +6,7 @@ type StatusIndicatorProps = {
   detail: string
 }
 
-export function StatusIndicator({ label, tone, detail }: StatusIndicatorProps) {
+export function StatusIndicator({ label, tone, detail }: Readonly<StatusIndicatorProps>) {
   return (
     <div className={`status status--${tone}`}>
       <span className="status__marker" aria-hidden="true" />

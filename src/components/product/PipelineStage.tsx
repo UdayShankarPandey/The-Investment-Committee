@@ -7,7 +7,7 @@ type PipelineStageProps = {
   tone?: 'neutral' | 'bull' | 'bear' | 'risk' | 'verdict'
 }
 
-export function PipelineStage({ number, name, role, tone = 'neutral' }: PipelineStageProps) {
+export function PipelineStage({ number, name, role, tone = 'neutral' }: Readonly<PipelineStageProps>) {
   const { domRef, isVisible } = useIntersectionObserver({ threshold: 0.25 })
 
   return (

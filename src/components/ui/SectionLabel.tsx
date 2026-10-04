@@ -4,6 +4,6 @@ type SectionLabelProps = {
   children: ReactNode
 }
 
-export function SectionLabel({ children }: SectionLabelProps) {
+export function SectionLabel({ children }: Readonly<SectionLabelProps>) {
   return <p className="section-label">{children}</p>
 }

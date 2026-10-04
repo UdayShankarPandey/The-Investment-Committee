@@ -39,7 +39,7 @@ export function metricsMiddleware(req: Request, res: Response, next: NextFunctio
     const durationInSeconds = diff[0] + diff[1] / 1e9;
 
     let route = 'unmatched';
-    if (req.route && req.route.path) {
+    if (req.route?.path) {
       route = `${req.baseUrl || ''}${req.route.path}`;
     } else if (res.statusCode === 404) {
       route = 'not_found';

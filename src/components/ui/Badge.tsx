@@ -7,6 +7,6 @@ type BadgeProps = {
   tone?: BadgeTone
 }
 
-export function Badge({ children, tone = 'neutral' }: BadgeProps) {
+export function Badge({ children, tone = 'neutral' }: Readonly<BadgeProps>) {
   return <span className={`badge badge--${tone}`}>{children}</span>
 }

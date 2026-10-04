@@ -263,7 +263,7 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible { outline: 2px s
 .pipeline__fork::after, .pipeline__merge::after { position: absolute; right: 25%; bottom: 0; left: 25%; height: 1px; background: var(--color-rule-strong); content: ""; }
 .pipeline__merge::after { top: 0; bottom: auto; }
 .pipeline-stage { display: grid; grid-template-columns: 2.25rem minmax(0, 1fr); gap: var(--space-4); min-height: 7.75rem; padding: var(--space-5); background: var(--color-canvas); border: 1px solid var(--color-rule); border-radius: var(--radius-sm); transition: transform var(--motion-fast) var(--motion-ease), box-shadow var(--motion-fast) var(--motion-ease), border-color var(--motion-fast) var(--motion-ease); }
-.pipeline-stage.is-visible:hover { transform: translateY(-3px); box-shadow: var(--shadow-subtle); }
+.pipeline-stage.is-visible:hover { transform: translateY(-3px); box-shadow: var(--shadow-subtle); border-color: var(--color-rule-strong); }
 .pipeline-stage__number { width: 2rem; height: 2rem; margin: 0; border: 1px solid var(--color-rule-strong); border-radius: 50%; color: var(--color-ink-muted); font-size: 0.6875rem; font-weight: 750; letter-spacing: 0.04em; line-height: 1.875rem; text-align: center; transition: color var(--motion-fast) var(--motion-ease), border-color var(--motion-fast) var(--motion-ease), transform var(--motion-fast) var(--motion-ease); }
 .pipeline-stage h3 { margin: 0; color: var(--color-ink); font-family: var(--font-display); font-size: 1.5rem; font-weight: 400; line-height: 1.05; letter-spacing: -0.025em; }
 .pipeline-stage div > p { margin: var(--space-2) 0 0; color: var(--color-ink-muted); font-size: 0.8125rem; line-height: 1.5; }
@@ -271,7 +271,6 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible { outline: 2px s
 .pipeline-stage--bear { border-color: color-mix(in srgb, var(--color-bear) 55%, var(--color-rule)); }
 .pipeline-stage--risk { border-color: color-mix(in srgb, var(--color-risk) 55%, var(--color-rule)); }
 .pipeline-stage--verdict { background: var(--color-surface-emphasis); border-color: #635d4b; }
-.pipeline-stage.is-visible:hover { border-color: var(--color-rule-strong); }
 .pipeline-stage--bull.is-visible:hover { border-color: var(--color-bull); }
 .pipeline-stage--bear.is-visible:hover { border-color: var(--color-bear); }
 .pipeline-stage--risk.is-visible:hover { border-color: var(--color-risk); }

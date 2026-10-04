@@ -5,6 +5,6 @@ type ContainerProps = {
   className?: string
 }
 
-export function Container({ children, className = '' }: ContainerProps) {
+export function Container({ children, className = '' }: Readonly<ContainerProps>) {
   return <div className={`container ${className}`.trim()}>{children}</div>
 }
