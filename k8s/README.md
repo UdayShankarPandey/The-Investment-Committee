@@ -33,8 +33,9 @@ This directory contains production-ready, declarative Kubernetes manifests and K
 - Zero hardcoded host IPs, loopback interfaces (`127.0.0.1`), or public endpoints between microservices.
 
 ### 3. Immutable Release Image Provenance
-- Container image tags are locked to the exact 40-character Git commit SHA:
-  `107585010019.dkr.ecr.ap-south-1.amazonaws.com/the-investment-committee:08118d81cbf390e69d8dbb99ae50f340b2dfb74a`
+- Container image tags are locked to the exact 40-character Git commit SHA, separated by service:
+  - Frontend: `107585010019.dkr.ecr.ap-south-1.amazonaws.com/the-investment-committee:<commit-sha>-frontend`
+  - Backend: `107585010019.dkr.ecr.ap-south-1.amazonaws.com/the-investment-committee:<commit-sha>-backend`
 - Avoids mutable floating tags (`latest`, `dev`, `prod`).
 
 ### 4. Zero-Privilege Security Contexts

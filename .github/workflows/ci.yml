@@ -134,15 +134,23 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Production Application Image
+      - name: Build Production Container Images (Frontend & Backend)
         run: |
-          echo "Building production Docker image from root Dockerfile..."
+          echo "Building production frontend image from root Dockerfile..."
           docker build \
-            --label "org.opencontainers.image.title=The Investment Committee" \
+            --label "org.opencontainers.image.title=The Investment Committee - Frontend" \
             --label "org.opencontainers.image.source=https://github.com/${{ github.repository }}" \
             --label "org.opencontainers.image.revision=${{ github.sha }}" \
             --label "org.opencontainers.image.created=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
-            -t ${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} .
+            -t ${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}-frontend .
+
+          echo "Building production backend image from backend/Dockerfile..."
+          docker build \
+            --label "org.opencontainers.image.title=The Investment Committee - Backend" \
+            --label "org.opencontainers.image.source=https://github.com/${{ github.repository }}" \
+            --label "org.opencontainers.image.revision=${{ github.sha }}" \
+            --label "org.opencontainers.image.created=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
+            -t ${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}-backend ./backend
 
       - name: Configure AWS Credentials (OIDC Only)
         uses: aws-actions/configure-aws-credentials@v4
@@ -155,23 +163,32 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Tag and Push Image to Amazon ECR
+      - name: Tag and Push Container Images to Amazon ECR
         run: |
           REGISTRY="${{ steps.login-ecr.outputs.registry }}"
-          TARGET_IMAGE="$REGISTRY/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
-          echo "Tagging image: $TARGET_IMAGE"
-          docker tag ${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} "$TARGET_IMAGE"
-          echo "Pushing image to Amazon ECR..."
-          docker push "$TARGET_IMAGE"
+          FRONTEND_IMAGE="$REGISTRY/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}-frontend"
+          BACKEND_IMAGE="$REGISTRY/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}-backend"
+
+          echo "Tagging frontend image: $FRONTEND_IMAGE"
+          docker tag ${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}-frontend "$FRONTEND_IMAGE"
+          echo "Pushing frontend image to Amazon ECR..."
+          docker push "$FRONTEND_IMAGE"
+
+          echo "Tagging backend image: $BACKEND_IMAGE"
+          docker tag ${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}-backend "$BACKEND_IMAGE"
+          echo "Pushing backend image to Amazon ECR..."
+          docker push "$BACKEND_IMAGE"
 
       - name: Record Delivery Traceability
         run: |
           echo "=================================================="
-          echo "Sprint 3 Delivery Artifact Summary"
+          echo "Sprint 5 Delivery Artifact Summary (Dual-Image Architecture)"
           echo "=================================================="
-          echo "Commit SHA: ${{ github.sha }}"
-          echo "Image Tag:  ${{ env.IMAGE_TAG }}"
-          echo "Registry:   ${{ steps.login-ecr.outputs.registry }}"
-          echo "Target ECR: ${{ env.ECR_REPOSITORY }}"
-          echo "Canonical:  ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
+          echo "Commit SHA:         ${{ github.sha }}"
+          echo "Frontend Tag:       ${{ env.IMAGE_TAG }}-frontend"
+          echo "Backend Tag:        ${{ env.IMAGE_TAG }}-backend"
+          echo "Registry:           ${{ steps.login-ecr.outputs.registry }}"
+          echo "Target ECR:         ${{ env.ECR_REPOSITORY }}"
+          echo "Frontend Canonical: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}-frontend"
+          echo "Backend Canonical:  ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}-backend"
           echo "=================================================="
