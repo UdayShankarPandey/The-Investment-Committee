@@ -31,7 +31,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: backend
-          image: 107585010019.dkr.ecr.ap-south-1.amazonaws.com/the-investment-committee:08118d81cbf390e69d8dbb99ae50f340b2dfb74a
+          image: 107585010019.dkr.ecr.ap-south-1.amazonaws.com/the-investment-committee:cbb9748e7fbcae88eefae860122a6c88dca25f5b-backend
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
