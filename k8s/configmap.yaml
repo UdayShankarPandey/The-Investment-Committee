@@ -10,4 +10,5 @@ data:
   NODE_ENV: "production"
   PORT: "3000"
   HOST: "0.0.0.0"
+  # Clear-text protocol (HTTP) is used here strictly for local development and cluster-internal loopback origin validation
   ALLOWED_ORIGINS: "http://localhost,http://localhost:80,http://localhost:8080"

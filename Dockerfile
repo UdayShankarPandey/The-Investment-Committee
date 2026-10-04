@@ -8,7 +8,7 @@ WORKDIR /app
 
 # Install dependencies using authoritative lockfile
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --ignore-scripts
 
 # Copy source and build production bundle
 COPY . .

@@ -8,7 +8,7 @@ WORKDIR /app
 
 # Install all dependencies including build tooling
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --ignore-scripts
 
 # Copy TypeScript configuration and source
 COPY tsconfig.json ./
@@ -27,7 +27,7 @@ ENV NODE_ENV=production \
 
 # Install production-only dependencies
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
 
 # Copy compiled artifacts from build stage
 COPY --from=build-stage /app/dist ./dist
