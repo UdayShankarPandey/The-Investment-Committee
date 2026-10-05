@@ -52,9 +52,15 @@ The project relies on a bespoke, premium editorial aesthetic:
 
 ## Technology & Implementation State
 
-### Currently Implemented (Sprint 5 — Kubernetes & Amazon EKS Orchestration)
-- **Kubernetes Manifests & Orchestration (`k8s/`)**: Declarative Kubernetes manifests bundled via Kustomize (`kustomization.yaml`), featuring workload isolation in the `investment-committee` namespace, Node.js backend Deployment, unprivileged React/Nginx frontend Deployment, internal ClusterIP Services (`backend:3000`, `frontend:8080`), ConfigMap configuration, and L7 Ingress routing.
-- **Zero-Cost NAT-Free EKS Architecture**: Engineered to preserve the ~$35 AWS budget constraint. Worker nodes run on a single cost-effective `t3.small` instance in public subnets via Internet Gateway, completely eliminating recurring NAT Gateway charges ($32.40/mo).
+### Currently Implemented (Sprint 6 — Observability: Prometheus + Grafana + Kubernetes Metrics + Alerting)
+- **Kubernetes Observability Layer (`k8s/observability/`)**: Production-grade, least-privilege observability stack deployed in dedicated `observability` namespace.
+  - **Prometheus (`prom/prometheus:v3.15.0`)**: Scrapes application `/metrics`, `kube-state-metrics`, and cAdvisor node metrics. Configured with 24h bounded TSDB retention on ephemeral emptyDir volumes.
+  - **Grafana (`grafana/grafana:11.2.0`)**: Provisioned with automated Prometheus datasource and the custom dashboard *"The Investment Committee — Production Observability"* with 9 core panels.
+  - **kube-state-metrics (`v2.13.0`)**: Exports cluster and workload state (pod readiness, deployment replicas, node condition).
+  - **Alerting Rules**: 5 pre-configured alerts (`BackendDown`, `HighHTTPErrorRate`, `HighP95Latency`, `DeploymentUnavailable`, `PodNotReady`).
+  - **Zero Cost Cloud Footprint**: Prometheus and Grafana operate as ClusterIP services accessed via `kubectl port-forward`, avoiding any ALB/NLB or NAT Gateway charges.
+- **Kubernetes Manifests & Orchestration (`k8s/` — Sprint 5 Baseline)**: Declarative Kubernetes manifests bundled via Kustomize (`kustomization.yaml`), featuring workload isolation in the `investment-committee` namespace, Node.js backend Deployment, unprivileged React/Nginx frontend Deployment, internal ClusterIP Services (`backend:3000`, `frontend:8080`), ConfigMap configuration, and L7 Ingress routing.
+- **Zero-Cost NAT-Free EKS Architecture**: Engineered to preserve the strict budget constraint. Worker nodes run on a single cost-effective `t3.small` instance in public subnets via Internet Gateway, completely eliminating recurring NAT Gateway charges.
 - **Service Discovery & Non-Root Security**: Frontend Nginx reverse-proxies `/api/*`, `/health`, and `/metrics` directly to `http://backend:3000` via CoreDNS. Pods run with dropped capabilities (`drop: ["ALL"]`) under unprivileged users (`node:1000`, `nginx:101`).
 - **Immutable Release Traceability**: Kubernetes Deployments reference distinct, immutable Git commit SHA image tags from Amazon ECR for frontend (`107585010019.dkr.ecr.ap-south-1.amazonaws.com/the-investment-committee:<commit-sha>-frontend`) and backend (`107585010019.dkr.ecr.ap-south-1.amazonaws.com/the-investment-committee:<commit-sha>-backend`).
 - **Terraform Infrastructure as Code (`terraform/` — Sprint 4 Baseline)**: Modular, reproducible Terraform architecture defining dedicated 2-AZ VPC, subnets, Internet Gateway, route tables, least-privilege security groups, non-destructive ECR data-source integration, and Amazon EKS cluster architecture.
@@ -62,7 +68,6 @@ The project relies on a bespoke, premium editorial aesthetic:
 - **Containerization (Sprint 2 Baseline)**: Multi-stage Dockerfiles for frontend (port 8080) and backend (port 3000), orchestrated via Docker Compose with health-checked dependencies.
 
 ### Planned Architecture (Subsequent Sprints)
-- **Sprint 6**: Prometheus server scraping & Grafana monitoring dashboards.
 - **Sprint 7**: Reliability, failure drills, and security hardening.
 
 ## Project Structure

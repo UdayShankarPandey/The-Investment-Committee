@@ -1,0 +1,20 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: observability
+
+resources:
+  - namespace.yaml
+  - prometheus-rbac.yaml
+  - prometheus-config.yaml
+  - prometheus-rules.yaml
+  - prometheus-service.yaml
+  - prometheus-deployment.yaml
+  - kube-state-metrics-rbac.yaml
+  - kube-state-metrics-service.yaml
+  - kube-state-metrics-deployment.yaml
+  - grafana-datasource.yaml
+  - grafana-dashboards-provisioning.yaml
+  - grafana-dashboard.yaml
+  - grafana-service.yaml
+  - grafana-deployment.yaml

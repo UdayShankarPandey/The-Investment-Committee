@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-rules
+  namespace: observability
+  labels:
+    app.kubernetes.io/name: prometheus
+    app.kubernetes.io/part-of: the-investment-committee
+data:
+  alert-rules.yaml: |
+    groups:
+      - name: investment-committee-alerts
+        rules:
+          - alert: BackendDown
+            expr: up{job="backend"} == 0
+            for: 1m
+            labels:
+              severity: critical
+              tier: application
+            annotations:
+              summary: "Backend service target is down"
+              description: "The backend instance at {{ $labels.instance }} has been unreachable for more than 1 minute."
+
+          - alert: HighHTTPErrorRate
+            expr: (sum(rate(http_requests_total{status_code=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) * 100) > 5
+            for: 2m
+            labels:
+              severity: warning
+              tier: application
+            annotations:
+              summary: "High HTTP 5xx error rate detected"
+              description: "HTTP 5xx error rate has exceeded 5% over the last 5 minutes (currently {{ $value | printf \"%.2f\" }}%)."
+
+          - alert: HighP95Latency
+            expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 1.0
+            for: 2m
+            labels:
+              severity: warning
+              tier: performance
+            annotations:
+              summary: "High P95 latency detected"
+              description: "P95 request latency has exceeded 1.0 second for more than 2 minutes (currently {{ $value | printf \"%.3f\" }}s)."
+
+          - alert: DeploymentUnavailable
+            expr: (kube_deployment_spec_replicas{namespace="investment-committee",deployment="backend"} - kube_deployment_status_replicas_available{namespace="investment-committee",deployment="backend"}) > 0
+            for: 2m
+            labels:
+              severity: warning
+              tier: infrastructure
+            annotations:
+              summary: "Backend deployment replicas unavailable"
+              description: "Deployment {{ $labels.deployment }} has unavailable replicas (desired > available) for more than 2 minutes."
+
+          - alert: PodNotReady
+            expr: kube_pod_status_ready{namespace="investment-committee",condition="true"} == 0
+            for: 2m
+            labels:
+              severity: warning
+              tier: infrastructure
+            annotations:
+              summary: "Pod is not ready"
+              description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has been in a non-ready state for more than 2 minutes."

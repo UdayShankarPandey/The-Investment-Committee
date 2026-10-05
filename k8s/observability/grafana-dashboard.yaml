@@ -1,0 +1,270 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard
+  namespace: observability
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/part-of: the-investment-committee
+data:
+  investment-committee.json: |
+    {
+      "annotations": {
+        "list": []
+      },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 1,
+      "id": null,
+      "links": [],
+      "liveNow": false,
+      "panels": [
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+          "id": 100,
+          "title": "Application Performance & Latency",
+          "type": "row"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "custom": { "drawStyle": "line", "lineInterpolation": "smooth" },
+              "unit": "reqps"
+            }
+          },
+          "gridPos": { "h": 7, "w": 8, "x": 0, "y": 1 },
+          "id": 1,
+          "title": "HTTP Request Rate",
+          "type": "timeseries",
+          "targets": [
+            {
+              "expr": "sum(rate(http_requests_total[1m])) by (method, route)",
+              "legendFormat": "{{method}} {{route}}",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "custom": { "drawStyle": "line", "lineInterpolation": "smooth" },
+              "unit": "s"
+            }
+          },
+          "gridPos": { "h": 7, "w": 8, "x": 8, "y": 1 },
+          "id": 2,
+          "title": "HTTP Request Latency",
+          "type": "timeseries",
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket[1m])) by (le))",
+              "legendFormat": "p50 latency",
+              "refId": "A"
+            },
+            {
+              "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[1m])) by (le))",
+              "legendFormat": "p95 latency",
+              "refId": "B"
+            }
+          ]
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "custom": { "drawStyle": "line", "lineInterpolation": "smooth" },
+              "unit": "percent",
+              "min": 0,
+              "max": 100
+            }
+          },
+          "gridPos": { "h": 7, "w": 8, "x": 16, "y": 1 },
+          "id": 3,
+          "title": "HTTP Error Rate",
+          "type": "timeseries",
+          "targets": [
+            {
+              "expr": "(sum(rate(http_requests_total{status_code=~\"5..\"}[1m])) / sum(rate(http_requests_total[1m])) * 100) or vector(0)",
+              "legendFormat": "5xx Error Rate (%)",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 8 },
+          "id": 101,
+          "title": "Application Resource Utilization",
+          "type": "row"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "custom": { "drawStyle": "line", "lineInterpolation": "smooth" },
+              "unit": "percentunit"
+            }
+          },
+          "gridPos": { "h": 6, "w": 12, "x": 0, "y": 9 },
+          "id": 4,
+          "title": "Application CPU",
+          "type": "timeseries",
+          "targets": [
+            {
+              "expr": "rate(node_process_cpu_user_seconds_total[1m]) or sum(rate(container_cpu_usage_seconds_total{container=\"backend\"}[1m]))",
+              "legendFormat": "User CPU Usage",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "custom": { "drawStyle": "line", "lineInterpolation": "smooth" },
+              "unit": "bytes"
+            }
+          },
+          "gridPos": { "h": 6, "w": 12, "x": 12, "y": 9 },
+          "id": 5,
+          "title": "Application Memory",
+          "type": "timeseries",
+          "targets": [
+            {
+              "expr": "node_process_resident_memory_bytes or sum(container_memory_working_set_bytes{container=\"backend\"})",
+              "legendFormat": "Resident Memory (RSS)",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 15 },
+          "id": 102,
+          "title": "Cluster Workload & Target Health",
+          "type": "row"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "red", "value": null },
+                  { "color": "green", "value": 1 }
+                ]
+              }
+            }
+          },
+          "gridPos": { "h": 5, "w": 6, "x": 0, "y": 16 },
+          "id": 6,
+          "title": "Pod Readiness",
+          "type": "stat",
+          "targets": [
+            {
+              "expr": "sum(kube_pod_status_ready{condition=\"true\", namespace=\"investment-committee\"}) or count(up{job=\"backend\"} == 1)",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "red", "value": null },
+                  { "color": "green", "value": 1 }
+                ]
+              }
+            }
+          },
+          "gridPos": { "h": 5, "w": 6, "x": 6, "y": 16 },
+          "id": 7,
+          "title": "Deployment Availability",
+          "type": "stat",
+          "targets": [
+            {
+              "expr": "kube_deployment_status_replicas_available{namespace=\"investment-committee\", deployment=\"backend\"} or (count(up{job=\"backend\"} == 1))",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "red", "value": null },
+                  { "color": "green", "value": 1 }
+                ]
+              }
+            }
+          },
+          "gridPos": { "h": 5, "w": 6, "x": 12, "y": 16 },
+          "id": 8,
+          "title": "Prometheus Target Health",
+          "type": "stat",
+          "targets": [
+            {
+              "expr": "count(up == 1)",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "red", "value": 1 }
+                ]
+              }
+            }
+          },
+          "gridPos": { "h": 5, "w": 6, "x": 18, "y": 16 },
+          "id": 9,
+          "title": "Active Alerts",
+          "type": "stat",
+          "targets": [
+            {
+              "expr": "sum(ALERTS{alertstate=\"firing\"}) or vector(0)",
+              "refId": "A"
+            }
+          ]
+        }
+      ],
+      "refresh": "10s",
+      "schemaVersion": 38,
+      "style": "dark",
+      "tags": ["investment-committee", "production", "observability"],
+      "time": {
+        "from": "now-15m",
+        "to": "now"
+      },
+      "timepicker": {
+        "refresh_intervals": ["5s", "10s", "30s", "1m", "5m"]
+      },
+      "timezone": "browser",
+      "title": "The Investment Committee — Production Observability",
+      "uid": "the-investment-committee-prod",
+      "version": 1
+    }
