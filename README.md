@@ -52,8 +52,9 @@ The project relies on a bespoke, premium editorial aesthetic:
 
 ## Technology & Implementation State
 
-### Currently Implemented (Sprint 6 — Observability: Prometheus + Grafana + Kubernetes Metrics + Alerting)
-- **Kubernetes Observability Layer (`k8s/observability/`)**: Production-grade, least-privilege observability stack deployed in dedicated `observability` namespace.
+### Currently Implemented (Sprint 7 — Reliability, Security, Failure Detection, Rollback & Release Freeze)
+- **Reliability & Controlled Failure Rollback (`docs/ROLLBACK_RUNBOOK.md`)**: Comprehensive operational runbook and verified end-to-end failure drills demonstrating failure injection, Prometheus alert triggering (`BackendDown`, `DeploymentUnavailable`), Grafana panel visibility, instant rollback to verified immutable ECR image tags, and full recovery.
+- **Kubernetes Observability Layer (`k8s/observability/` — Sprint 6 Baseline)**: Production-grade, least-privilege observability stack deployed in dedicated `observability` namespace.
   - **Prometheus (`prom/prometheus:v3.15.0`)**: Scrapes application `/metrics`, `kube-state-metrics`, and cAdvisor node metrics. Configured with 24h bounded TSDB retention on ephemeral emptyDir volumes.
   - **Grafana (`grafana/grafana:11.2.0`)**: Provisioned with automated Prometheus datasource and the custom dashboard *"The Investment Committee — Production Observability"* with 9 core panels.
   - **kube-state-metrics (`v2.13.0`)**: Exports cluster and workload state (pod readiness, deployment replicas, node condition).
@@ -67,8 +68,8 @@ The project relies on a bespoke, premium editorial aesthetic:
 - **CI/CD Delivery Pipeline (`.github/workflows/ci.yml` — Sprint 3 Baseline)**: GitHub Actions workflow enforcing automated quality gates, container build validation, immutable SHA tagging, and Amazon ECR publishing via OIDC.
 - **Containerization (Sprint 2 Baseline)**: Multi-stage Dockerfiles for frontend (port 8080) and backend (port 3000), orchestrated via Docker Compose with health-checked dependencies.
 
-### Planned Architecture (Subsequent Sprints)
-- **Sprint 7**: Reliability, failure drills, and security hardening.
+### Release State
+- All technical development sprints (S1 through S7) completed, verified, and frozen.
 
 ## Project Structure
 
