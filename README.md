@@ -69,7 +69,16 @@ The project relies on a bespoke, premium editorial aesthetic:
 - **Containerization (Sprint 2 Baseline)**: Multi-stage Dockerfiles for frontend (port 8080) and backend (port 3000), orchestrated via Docker Compose with health-checked dependencies.
 
 ### Release State
-- All technical development sprints (S1 through S7) completed, verified, and frozen.
+- All technical development sprints (S0 through S7) are complete, verified, and frozen:
+  - **Sprint 0**: Project setup, challenge specification, and architecture foundation ✅
+  - **Sprint 1**: Premium editorial homepage UI, interactive Devil's Advocate thesis challenge, responsive layout, and accessibility ✅
+  - **Sprint 2**: Containerization with multi-stage Dockerfiles (frontend & backend) and Docker Compose orchestration ✅
+  - **Sprint 3**: Automated CI/CD delivery pipeline via GitHub Actions with OIDC ECR publishing ✅
+  - **Sprint 4**: Modular Terraform Infrastructure as Code (VPC, subnets, SGs, IAM, conditional EKS) ✅
+  - **Sprint 5**: Kubernetes manifests, non-root workloads, ClusterIP networking, CoreDNS service discovery, and live EKS runtime verification ✅
+  - **Sprint 6**: Observability layer with Prometheus, Grafana dashboard (9 panels), and 5 alert rules ✅
+  - **Sprint 7**: Reliability failure injection drills, automated detection, rollback to immutable image, recovery, and infrastructure teardown ✅
+- The architecture and codebase are frozen.
 
 ## Project Structure
 
@@ -266,24 +275,29 @@ GitHub Push / Pull Request
          └──[IF push to main]──> Job: Build & Publish to Amazon ECR
                                    ├── AWS OIDC Authentication (id-token: write)
                                    ├── Amazon ECR Login
-                                   ├── Production Docker Image Build
-                                   ├── Tag with Exact Git SHA (${{ github.sha }})
-                                   └── Push Immutable Image to ECR
+                                   ├── Production Docker Image Build (Frontend & Backend)
+                                   ├── Tag with Immutable Git SHA (<git-sha>-frontend & <git-sha>-backend)
+                                   └── Push Immutable Images to Amazon ECR
 ```
 
 ### Key Workflow Characteristics
 
 - **Triggers**: Automated on pushes to `main` and pull requests targeting `main`.
 - **Quality Gates**: Both frontend (`npm ci`, `lint`, `typecheck`, `build`) and backend (`npm ci`, `test`, `lint`, `typecheck`, `build`) must pass before downstream container build or release jobs execute.
-- **Traceability & Immutability**: Production images are tagged with the exact 40-character Git commit SHA (`${{ github.sha }}`). The immutable image tag corresponds directly to the repository commit.
+- **Traceability & Immutability**: Production images are built independently and tagged with the exact 40-character Git commit SHA (`${{ github.sha }}`) using service-specific suffixes:
+  - Frontend: `<git-sha>-frontend`
+  - Backend: `<git-sha>-backend`
+  Both artifacts are immutable, Git-SHA-derived releases published directly to Amazon ECR.
 - **Security & Least Privilege**:
   - Top-level workflow permissions are strictly `contents: read`.
   - Cloud token issuance (`id-token: write`) is restricted to the ECR publishing job on trusted branch pushes.
   - Pull requests run in an unprivileged context without access to AWS credentials or publishing privileges.
   - **OIDC-Only Authentication**: AWS authentication is performed strictly via OpenID Connect (OIDC) federation (`audience: sts.amazonaws.com`). Static IAM access keys (`AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`) are prohibited and unsupported.
-- **ECR Destination**: Canonical release artifacts are published to `<aws-account>.dkr.ecr.ap-south-1.amazonaws.com/the-investment-committee:<git-commit-sha>`.
+- **ECR Destination**: Canonical release artifacts are published to Amazon ECR as distinct immutable images:
+  - Frontend: `<aws-account>.dkr.ecr.ap-south-1.amazonaws.com/the-investment-committee:<git-sha>-frontend`
+  - Backend: `<aws-account>.dkr.ecr.ap-south-1.amazonaws.com/the-investment-committee:<git-sha>-backend`
 - **Required GitHub Configuration**: Repository variable or secret `AWS_ROLE_ARN` specifying the IAM Role ARN with trust policy restricted to `repo:UdayShankarPandey/The-Investment-Committee:ref:refs/heads/main`.
-- **Planned Scope**: Deployment to Kubernetes / Amazon EKS and Terraform infrastructure provisioning are planned for subsequent sprints.
+- **Architecture State**: All delivery and runtime phases (S0–S7) are complete and verified. Deployment to Kubernetes / Amazon EKS, Terraform infrastructure automation, Prometheus/Grafana observability, and failure recovery drills have been executed and frozen.
 
 ## Honesty & Disclosure
 
@@ -311,9 +325,16 @@ The codebase has been verified against the following checks:
 - Backend: `npm run build` (PASS)
 - Manual responsive, cross-viewport, and runtime HTTP verification across frontend and backend.
 
-## Submission
+## Submission & Verification State
 
-*(Repository currently pending final deployment configuration).*
+- **S0–S7 Complete**: All development sprints (S0 through S7) have been implemented, validated, and frozen.
+- **CI/CD Verified**: Automated GitHub Actions quality gates and dual-image ECR publishing verified on `main`.
+- **EKS / Kubernetes Runtime Verified**: Live cluster deployment with 1 managed worker node (`t3.small`), unprivileged non-root workloads, ClusterIP services, and CoreDNS reverse proxy validated end-to-end.
+- **Prometheus & Grafana Observability Verified**: 4/4 scrape targets UP, 9-panel dashboard populating real-time metrics, and 5 alert rules evaluated live.
+- **Controlled Failure & Rollback Demonstrated**: Controlled failure injected via runtime image mutation, detected via Prometheus `up{job="backend"} == 0` and firing alerts (`BackendDown`), diagnosed, rolled back to verified immutable ECR SHA tag, and recovered cleanly to 100% nominal health.
+- **Temporary AWS Infrastructure Cleaned Up**: All temporary runtime resources (EKS cluster, managed worker node group, VPC, subnets, route tables, and security groups) were destroyed via Terraform (`0` clusters, `0` EC2, `0` NAT, `0` ALBs remaining).
+- **Persistent Foundation Preserved**: Amazon ECR repository with immutable image releases and GitHub Actions OIDC IAM federation are preserved as permanent assets.
+- **Repository Frozen**: Architecture, dependencies, and configuration are permanently frozen for submission.
 
 ---
 *Illustrative research workflow. Not investment advice.*
